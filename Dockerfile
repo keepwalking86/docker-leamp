@@ -22,12 +22,9 @@ RUN rm -v /etc/httpd/conf/httpd.conf
 # Copy a configuration file from the current directory
 ADD etc/httpd.conf /etc/httpd/conf/
 
-#Mount html folder to Root Directory
-VOLUME html /var/www/html/
-
 ####Installing & configuring MongoDB-3.4
 #Add mongodb.repo
-ADD mongodb.repo /etc/yum.repos.d/
+ADD etc/mongodb.repo /etc/yum.repos.d/
 #Install MongoDB
 RUN yum install mongodb-org -y
 #Create DB storage
