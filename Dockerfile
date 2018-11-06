@@ -1,6 +1,6 @@
 FROM centos:7
 
-MAINTAINER KeepWalking
+MAINTAINER KeepWalking86
 
 #Installing repo epel, webstatic
 RUN yum -y install epel-release && \
@@ -16,48 +16,37 @@ RUN yum install -y php71w php71w-common php71w-gd php71w-phar \
 #Install Apache
 RUN yum -y install httpd
 
-# Remove the default configuration file
-RUN rm -v /etc/httpd/conf/httpd.conf
-
 # Copy a configuration file from the current directory
-ADD etc/httpd.conf /etc/httpd/conf/
+COPY etc/httpd.conf /etc/httpd/conf/
 
-####Installing & configuring MongoDB-3.4
-#Add mongodb.repo
-ADD etc/mongodb.repo /etc/yum.repos.d/
-#Install MongoDB
+#Installing & configuring MongoDB-3X
+COPY etc/mongodb.repo /etc/yum.repos.d/
+RUN yum update -y
 RUN yum install mongodb-org -y
 #Create DB storage
 RUN mkdir -p /data/db && chown -R mongod:mongod /data
-#Remove the default configuration file
-RUN rm -v /etc/mongod.conf
 #Copy a new configuration file from current directory
-ADD etc/mongod.conf /etc/
-#Install mongo-php-library
-RUN yum -y install php71w-pecl-mongodb
+COPY etc/mongod.conf /etc/
 
-####Installing & Configuring Nginx
-#Install Nginx
-RUN yum install -y nginx  
-
-# Remove the default Nginx configuration file
-RUN rm -v /etc/nginx/nginx.conf
-
-# Copy a configuration file from the current directory
-ADD etc/nginx.conf /etc/nginx/
-
+###Installing & Configuring Nginx
+RUN yum install -y nginx
+COPY etc/nginx.conf /etc/nginx/
 #Copy proxy params configuration file
-ADD etc/proxy_params /etc/nginx/
+COPY etc/proxy_params /etc/nginx/
 
 # Installing & Configuring Supervisord
 #Install supervisord
 RUN yum -y install python-setuptools
 RUN easy_install supervisor
 #Copy a new configuration file
-ADD etc/supervisord.conf /etc/supervisord.conf
+COPY etc/supervisord.conf /etc/supervisord.conf
+## Set the default command to execute
+CMD ["supervisord", "-n", "-c", "/etc/supervisord.conf"]
+
+##Clearing the yum caches
+RUN yum clean all
 
 # Expose ports
 EXPOSE 80 8080 27017
 
-## Set the default command to execute
-CMD ["supervisord", "-n", "-c", "/etc/supervisord.conf"]
+
